@@ -10,13 +10,30 @@ Página responsiva de consulta de produtos que consome a API pública [DummyJSON
 
 ## Como executar
 
-Por usar ES Modules, o projeto precisa ser servido por HTTP (abrir o `index.html` direto pelo `file://` é bloqueado pelo navegador). Dentro da pasta do projeto, use qualquer servidor estático:
+Como o projeto utiliza ES Modules, ele precisa ser servido por HTTP. Abrir o `index.html` diretamente pelo protocolo `file://` pode causar bloqueios no navegador.
 
-# ou Node.js
+### Opção 1 — Live Server no VS Code
+
+1. Instale a extensão **Live Server** no Visual Studio Code.
+2. Abra a pasta do projeto no VS Code.
+3. Clique com o botão direito no arquivo `index.html`.
+4. Selecione **Open with Live Server**.
+
+O projeto será aberto automaticamente no navegador, normalmente em um endereço como:
+
+```txt
+http://127.0.0.1:5500
+```
+
+### Opção 2 — Node.js
+
+Caso tenha Node.js instalado, também é possível utilizar um servidor estático pelo terminal:
+
+```bash
 npx serve .
 ```
 
-Depois acesse `http://localhost:8080`. Também funciona com a extensão Live Server do VS Code.
+Depois, acesse o endereço exibido no terminal.
 
 ## Funcionalidades
 
@@ -32,7 +49,9 @@ Depois acesse `http://localhost:8080`. Também funciona com a extensão Live Ser
 ## Decisões técnicas
 
 - **Roteamento por hash** (`#/produtos/1`): funciona em qualquer servidor estático, sem configuração de rewrite.
-- **`toElement(html)`**: helper que converte uma string HTML em elemento usando `<template>`, evitando longas cadeias de `document.createElement`. Todo dado vindo da API passa por `esc()` antes de entrar no template.
+- **Criação de componentes com `<template>`**: os componentes visuais são montados a partir de strings HTML e convertidos em elementos reais do DOM usando um elemento `<template>`. O helper `toElement(html)` insere o HTML em `template.innerHTML` e retorna o primeiro elemento criado. Isso evita longas sequências de `document.createElement`, `appendChild` e atribuições manuais, mantendo a criação dos componentes mais legível.
+- **`toElement(html)`**: centraliza essa conversão de HTML em elemento DOM. Antes de dados vindos da API serem inseridos nos templates, eles passam por `esc()` para escapar caracteres especiais e evitar que conteúdo externo seja interpretado como HTML.
+- **Componentização em JavaScript puro**: funções como `productDetail()`, `statusBox()` e outras retornam elementos do DOM prontos para serem inseridos na página, funcionando como componentes reutilizáveis sem a necessidade de frameworks como React ou Vue.
 - **Organização**: `api.js` (requisições), `format.js` (formatação), `dom.js` (helpers), `components.js` (peças reutilizáveis), `views/` (telas) e `main.js` (rotas).
 - **Busca e categoria são excludentes**, pois a API do DummyJSON não combina os dois filtros no mesmo endpoint.
 - **Requisições concorrentes**: um contador de requisição descarta respostas antigas, evitando que uma resposta lenta sobrescreva a mais recente. A busca usa debounce de 350 ms.
