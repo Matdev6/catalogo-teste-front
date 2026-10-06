@@ -290,7 +290,7 @@ tbody tr:hover {
 	color: var(--muted);
 }
 
-.breadcrumb li + li::before {
+.breadcrumb li+li::before {
 	content: "›";
 	margin-right: 0.25rem;
 	color: var(--line);
@@ -364,7 +364,6 @@ tbody tr:hover {
 	display: grid;
 	gap: 1rem;
 	margin: 1.5rem 0;
-	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
 }
 
 .facts dt {
@@ -373,8 +372,16 @@ tbody tr:hover {
 }
 
 .facts dd {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
 	margin: 0;
 	font-weight: 600;
+}
+
+.fact-icon {
+	flex-shrink: 0;
+	color: var(--accent);
 }
 
 .tags {
