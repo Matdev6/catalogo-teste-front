@@ -5,27 +5,65 @@ import { formatPrice, formatRating, formatCategory, discountedPrice } from "../f
 
 const fact = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`
 
+function starsHtml(rating) {
+	const full = Math.floor(rating)
+	const half = rating - full >= 0.25 && rating - full < 0.75 ? 1 : 0
+	const empty = 5 - full - half
+	const fullStar = `<span class="star star--full" aria-hidden="true">★</span>`
+	const halfStar = `<span class="star star--half" aria-hidden="true">★</span>`
+	const emptyStar = `<span class="star star--empty" aria-hidden="true">★</span>`
+	return (
+		`<span class="star-rating" role="img" aria-label="Avaliação: ${rating.toFixed(1)} de 5 estrelas">` +
+		fullStar.repeat(full) +
+		halfStar.repeat(half) +
+		emptyStar.repeat(empty) +
+		`<span class="star-rating__value">${formatRating(rating)} de 5</span>` +
+		`</span>`
+	)
+}
+
+function breadcrumbHtml(backHref, category, title) {
+	return `
+		<nav class="breadcrumb" aria-label="Navegação estrutural">
+			<ol>
+				<li><a href="${esc(backHref)}">Catálogo</a></li>
+				<li><span>${esc(formatCategory(category))}</span></li>
+				<li><span aria-current="page">${esc(title)}</span></li>
+			</ol>
+		</nav>
+	`
+}
+
 function productDetail(product, backHref) {
 	const tags = product.tags?.length
 		? `<ul class="tags" aria-label="Tags">${product.tags.map((tag) => `<li>${esc(tag)}</li>`).join("")}</ul>`
 		: ""
-	const brand = product.brand ? fact("Marca", esc(product.brand)) : ""
+
+	const originalPrice = product.price
+	const finalPrice = discountedPrice(product.price, product.discountPercentage)
+	const discountPct = product.discountPercentage.toFixed(0)
+
+	const priceBlock = `
+		<div class="price-block">
+			<span class="price-block__original">${formatPrice(originalPrice)}</span>
+			<span class="price-block__final">${formatPrice(finalPrice)}</span>
+			<span class="price-block__badge">${discountPct}% OFF</span>
+		</div>
+	`
 
 	const article = toElement(`
 		<article class="detail">
-			<a class="back" href="${esc(backHref)}">Voltar ao catálogo</a>
+			${breadcrumbHtml(backHref, product.category, product.title)}
 			<div class="detail__grid">
 				<img class="detail__image" src="${esc(product.images?.[0] ?? product.thumbnail)}" alt="${esc(product.title)}" width="480" height="480">
 				<div>
+					<span class="detail__category">${esc(formatCategory(product.category))}</span>
 					<h1 tabindex="-1">${esc(product.title)}</h1>
+					<span class="detail__brand">${esc(product.brand)}</span>
+					${starsHtml(product.rating)}
 					<p class="detail__desc">${esc(product.description)}</p>
+					${priceBlock}
 					<dl class="facts">
-						${fact("Categoria", esc(formatCategory(product.category)))}
-						${brand}
-						${fact("Preço", formatPrice(product.price))}
-						${fact("Desconto", `${product.discountPercentage.toFixed(0)}%`)}
-						${fact("Preço com desconto", formatPrice(discountedPrice(product.price, product.discountPercentage)))}
-						${fact("Avaliação", `${formatRating(product.rating)} de 5`)}
 						${fact("Estoque", `${product.stock} unidades`)}
 					</dl>
 					${tags}
